@@ -1,6 +1,7 @@
 module App.Test exposing (all)
 
-import ElmTest exposing (..)
+import Test exposing (..)
+import Expect exposing (..)
 import RemoteData exposing (RemoteData(..))
 import App.Model exposing (..)
 import App.Update exposing (..)
@@ -8,17 +9,17 @@ import App.Update exposing (..)
 
 setActivePage : Test
 setActivePage =
-    suite "SetActivePage msg"
-        [ test "set new active page"
-            (assertEqual PageNotFound (getPageAsAnonymous PageNotFound))
-        , test "set Login page for anonymous user"
-            (assertEqual Login (getPageAsAnonymous Login))
-        , test "set My account page for anonymous user"
-            (assertEqual AccessDenied (getPageAsAnonymous MyAccount))
-        , test "set Login page for authenticated user"
-            (assertEqual AccessDenied (getPageAsAuthenticated Login))
-        , test "set My account page for authenticated user"
-            (assertEqual MyAccount (getPageAsAuthenticated MyAccount))
+    describe "SetActivePage msg"
+        [ test "set new active page" <|
+            \() -> equal PageNotFound (getPageAsAnonymous PageNotFound)
+        , test "set Login page for anonymous user" <|
+            \() -> equal Login (getPageAsAnonymous Login)
+        , test "set My account page for anonymous user" <|
+            \() -> equal AccessDenied (getPageAsAnonymous MyAccount)
+        , test "set Login page for authenticated user" <|
+            \() -> equal AccessDenied (getPageAsAuthenticated Login)
+        , test "set My account page for authenticated user" <|
+            \() -> equal MyAccount (getPageAsAuthenticated MyAccount)
         ]
 
 
@@ -45,6 +46,6 @@ getPageAsAuthenticated page =
 
 all : Test
 all =
-    suite "App tests"
+    describe "App tests"
         [ setActivePage
         ]
