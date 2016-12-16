@@ -1,18 +1,16 @@
 module Pages.Login.Update exposing (update, Msg(..))
 
-import Exts.RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..), WebData)
 import Http
 import Regex exposing (regex, replace, HowMany(All))
 import String exposing (isEmpty)
-import Task
 import User.Decoder exposing (..)
 import User.Model exposing (..)
 import Pages.Login.Model as Login exposing (..)
 
 
 type Msg
-    = FetchFail Http.Error
-    | FetchSucceed User
+    = NewUser (Result Http.Error User)
     | SetLogin String
     | TryLogin
 
@@ -25,10 +23,10 @@ init =
 update : WebData User -> Msg -> Model -> ( Model, Cmd Msg, WebData User )
 update user msg model =
     case msg of
-        FetchSucceed github ->
+        NewUser (Ok github) ->
             ( model, Cmd.none, Success github )
 
-        FetchFail err ->
+        NewUser (Err err) ->
             ( model, Cmd.none, Failure err )
 
         SetLogin login ->
@@ -97,4 +95,4 @@ fetchFromGitHub login =
         url =
             "https://api.github.com/users/" ++ login
     in
-        Task.perform FetchFail FetchSucceed (Http.get decodeFromGithub url)
+        Http.send NewUser (Http.get url decodeFromGithub)

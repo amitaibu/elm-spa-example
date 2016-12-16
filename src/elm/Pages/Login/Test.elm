@@ -1,7 +1,7 @@
 module Pages.Login.Test exposing (all)
 
 import ElmTest exposing (..)
-import Exts.RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..), WebData)
 import Pages.Login.Model exposing (..)
 import Pages.Login.Update exposing (..)
 import User.Model exposing (..)

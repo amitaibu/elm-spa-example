@@ -7,7 +7,7 @@ import App.View exposing (view)
 import RouteUrl
 
 
-main : Program Never
+main : RouteUrl.RouteUrlProgram Never Model Msg
 main =
     RouteUrl.program
         { delta2url = delta2url

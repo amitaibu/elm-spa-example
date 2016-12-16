@@ -1,6 +1,6 @@
 module Pages.Login.View exposing (view)
 
-import Exts.RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..), WebData)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
@@ -39,7 +39,7 @@ view user model =
             ]
             [ div [ inputClasses ]
                 [ input
-                    [ type' "text"
+                    [ type_ "text"
                     , placeholder "Github name"
                     , onInput SetLogin
                     , value model.login
