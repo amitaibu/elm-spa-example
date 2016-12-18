@@ -1,7 +1,7 @@
 module App.Update exposing (init, update, Msg(..))
 
 import App.Model exposing (..)
-import Exts.RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..), WebData)
 import User.Model exposing (..)
 import Pages.Login.Update exposing (Msg)
 
@@ -28,24 +28,24 @@ update msg model =
                 ( val, cmds, user ) =
                     Pages.Login.Update.update model.user msg model.pageLogin
 
-                model' =
+                model_ =
                     { model
                         | pageLogin = val
                         , user = user
                     }
 
-                model'' =
+                model__ =
                     case user of
                         -- If user was successfuly fetched, reditect to my
                         -- account page.
                         Success _ ->
-                            update (SetActivePage MyAccount) model'
-                                |> fst
+                            update (SetActivePage MyAccount) model_
+                                |> Tuple.first
 
                         _ ->
-                            model'
+                            model_
             in
-                ( model'', Cmd.map PageLogin cmds )
+                ( model__, Cmd.map PageLogin cmds )
 
         SetActivePage page ->
             { model | activePage = setActivePageAccess model.user page } ! []

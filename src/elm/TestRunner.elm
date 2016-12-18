@@ -1,18 +1,15 @@
 module Main exposing (..)
 
-import ElmTest exposing (..)
+import Test exposing (..)
+import Test.Runner.Html
 import App.Test as App exposing (..)
 import Pages.Login.Test as PagesLogin exposing (..)
 
 
-allTests : Test
-allTests =
-    suite "All tests"
-        [ App.all
-        , PagesLogin.all
-        ]
-
-
-main : Program Never
+main : Test.Runner.Html.TestProgram
 main =
-    runSuiteHtml allTests
+    [ App.all
+    , PagesLogin.all
+    ]
+        |> concat
+        |> Test.Runner.Html.run
