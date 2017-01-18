@@ -1,32 +1,36 @@
 module App.View exposing (..)
 
-import Exts.RemoteData exposing (RemoteData(..), WebData)
+import App.Model exposing (..)
+import Config.View
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, href, src, style, target)
-import Html.App as Html
 import Html.Events exposing (onClick)
-import App.Model exposing (..)
-import App.Update exposing (..)
 import User.Model exposing (..)
 import Pages.Login.View exposing (..)
 import Pages.MyAccount.View exposing (..)
 import Pages.PageNotFound.View exposing (..)
+import RemoteData exposing (RemoteData(..), WebData)
 
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ div [ class "ui container main" ]
-            [ viewHeader model
-            , viewMainContent model
-            , pre [ class "ui padded secondary segment" ]
-                [ div [] [ text <| "activePage: " ++ toString model.activePage ]
-                , div [] [ text <| "pageLogin: " ++ toString model.pageLogin ]
-                , div [] [ text <| "user: " ++ toString model.user ]
+    case model.config of
+        Failure err ->
+            Config.View.view
+
+        _ ->
+            div []
+                [ div [ class "ui container main" ]
+                    [ viewHeader model
+                    , viewMainContent model
+                    , pre [ class "ui padded secondary segment" ]
+                        [ div [] [ text <| "activePage: " ++ toString model.activePage ]
+                        , div [] [ text <| "pageLogin: " ++ toString model.pageLogin ]
+                        , div [] [ text <| "user: " ++ toString model.user ]
+                        ]
+                    ]
+                , viewFooter
                 ]
-            ]
-        , viewFooter
-        ]
 
 
 viewHeader : Model -> Html Msg
@@ -85,14 +89,14 @@ viewPageNotFoundItem activePage =
 viewAvatar : WebData User -> Html Msg
 viewAvatar user =
     case user of
-        Success user' ->
+        Success user_ ->
             a
                 [ onClick <| SetActivePage MyAccount
                 , class "ui item"
                 ]
                 [ img
                     [ class "ui avatar image"
-                    , src user'.avatarUrl
+                    , src user_.avatarUrl
                     ]
                     []
                 ]

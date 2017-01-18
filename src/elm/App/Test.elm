@@ -1,31 +1,37 @@
 module App.Test exposing (all)
 
-import ElmTest exposing (..)
-import Exts.RemoteData exposing (RemoteData(..))
 import App.Model exposing (..)
 import App.Update exposing (..)
+import Expect
+import Test exposing (describe, test, Test)
+import RemoteData exposing (RemoteData(..))
 
 
-setActivePage : Test
-setActivePage =
-    suite "SetActivePage msg"
-        [ test "set new active page"
-            (assertEqual PageNotFound (getPageAsAnonymous PageNotFound))
-        , test "set Login page for anonymous user"
-            (assertEqual Login (getPageAsAnonymous Login))
-        , test "set My account page for anonymous user"
-            (assertEqual AccessDenied (getPageAsAnonymous MyAccount))
-        , test "set Login page for authenticated user"
-            (assertEqual AccessDenied (getPageAsAuthenticated Login))
-        , test "set My account page for authenticated user"
-            (assertEqual MyAccount (getPageAsAuthenticated MyAccount))
+setActivePageTest : Test
+setActivePageTest =
+    describe "SetActivePage msg"
+        [ test "set new active page" <|
+            \() ->
+                Expect.equal PageNotFound (getPageAsAnonymous PageNotFound)
+        , test "set Login page for anonymous user" <|
+            \() ->
+                Expect.equal Login (getPageAsAnonymous Login)
+        , test "set My account page for anonymous user" <|
+            \() ->
+                Expect.equal AccessDenied (getPageAsAnonymous MyAccount)
+        , test "set Login page for authenticated user" <|
+            \() ->
+                Expect.equal AccessDenied (getPageAsAuthenticated Login)
+        , test "set My account page for authenticated user" <|
+            \() ->
+                Expect.equal MyAccount (getPageAsAuthenticated MyAccount)
         ]
 
 
 getPageAsAnonymous : Page -> Page
 getPageAsAnonymous page =
     update (SetActivePage page) emptyModel
-        |> fst
+        |> Tuple.first
         |> .activePage
 
 
@@ -33,18 +39,18 @@ getPageAsAuthenticated : Page -> Page
 getPageAsAuthenticated page =
     let
         dummyUser =
-            { name = Just "Foo", login = "foo", avatarUrl = "https://example.com" }
+            { id = 100, name = "Foo", avatarUrl = "https://example.com" }
 
         model =
             { emptyModel | user = Success dummyUser }
     in
         update (SetActivePage page) model
-            |> fst
+            |> Tuple.first
             |> .activePage
 
 
 all : Test
 all =
-    suite "App tests"
-        [ setActivePage
+    describe "App tests"
+        [ setActivePageTest
         ]

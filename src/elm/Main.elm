@@ -1,18 +1,15 @@
 module Main exposing (..)
 
-import App.Model exposing (Model)
-import App.Router exposing (..)
-import App.Update exposing (init, update, Msg)
+import App.Model exposing (Flags, Model, Msg)
+import App.Update exposing (init, update)
 import App.View exposing (view)
-import RouteUrl
+import Html
 
 
-main : Program Never
+main : Program Flags Model Msg
 main =
-    RouteUrl.program
-        { delta2url = delta2url
-        , location2messages = location2messages
-        , init = App.Update.init
+    Html.programWithFlags
+        { init = App.Update.init
         , update = App.Update.update
         , view = App.View.view
         , subscriptions = subscriptions

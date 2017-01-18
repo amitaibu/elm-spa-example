@@ -1,54 +1,84 @@
-module App.Update exposing (init, update, Msg(..))
+port module App.Update exposing (init, update)
 
 import App.Model exposing (..)
-import Exts.RemoteData exposing (RemoteData(..), WebData)
+import Config
+import Dict
+import Pages.Login.Update
+import RemoteData exposing (RemoteData(..), WebData)
 import User.Model exposing (..)
-import Pages.Login.Update exposing (Msg)
 
 
-type Msg
-    = Logout
-    | PageLogin Pages.Login.Update.Msg
-    | SetActivePage Page
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    let
+        ( config, cmds ) =
+            case (Dict.get flags.hostname Config.configs) of
+                Just config ->
+                    let
+                        cmd =
+                            if (String.isEmpty flags.accessToken) then
+                                -- Check if we have already an access token.
+                                Cmd.none
+                            else
+                                Cmd.map PageLogin <| Pages.Login.Update.fetchUserFromBackend config.backendUrl flags.accessToken
+                    in
+                        ( Success config, cmd )
 
-
-init : ( Model, Cmd Msg )
-init =
-    emptyModel ! []
+                Nothing ->
+                    ( Failure "No config found", Cmd.none )
+    in
+        { emptyModel | accessToken = flags.accessToken, config = config } ! [ cmds ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        Logout ->
-            init
+    let
+        backendUrl =
+            case model.config of
+                Success config ->
+                    config.backendUrl
 
-        PageLogin msg ->
-            let
-                ( val, cmds, user ) =
-                    Pages.Login.Update.update model.user msg model.pageLogin
+                _ ->
+                    ""
+    in
+        case msg of
+            Logout ->
+                ( { emptyModel | accessToken = "", config = model.config }
+                , accessTokenPort ""
+                )
 
-                model' =
-                    { model
-                        | pageLogin = val
-                        , user = user
-                    }
+            PageLogin msg ->
+                let
+                    ( val, cmds, ( webDataUser, accessToken ) ) =
+                        Pages.Login.Update.update backendUrl msg model.pageLogin
 
-                model'' =
-                    case user of
-                        -- If user was successfuly fetched, reditect to my
-                        -- account page.
-                        Success _ ->
-                            update (SetActivePage MyAccount) model'
-                                |> fst
+                    modelUpdated =
+                        { model
+                            | pageLogin = val
+                            , accessToken = accessToken
+                            , user = webDataUser
+                        }
 
-                        _ ->
-                            model'
-            in
-                ( model'', Cmd.map PageLogin cmds )
+                    ( modelWithRedirect, setActivePageCmds ) =
+                        case webDataUser of
+                            -- If user was successfuly fetched, reditect to my
+                            -- account page.
+                            Success _ ->
+                                update (SetActivePage MyAccount) modelUpdated
 
-        SetActivePage page ->
-            { model | activePage = setActivePageAccess model.user page } ! []
+                            _ ->
+                                modelUpdated ! []
+                in
+                    ( modelWithRedirect
+                    , Cmd.batch
+                        [ Cmd.map PageLogin cmds
+                        , accessTokenPort accessToken
+                        , setActivePageCmds
+                        ]
+                    )
+
+            SetActivePage page ->
+                { model | activePage = setActivePageAccess model.user page } ! []
 
 
 {-| Determine is a page can be accessed by a user (anonymous or authenticated),
@@ -71,3 +101,8 @@ setActivePageAccess user page =
                 AccessDenied
             else
                 page
+
+
+{-| Send access token to JS.
+-}
+port accessTokenPort : String -> Cmd msg
