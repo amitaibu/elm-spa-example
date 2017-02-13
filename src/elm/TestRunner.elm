@@ -14,6 +14,7 @@ allTests =
 
 
 main : TestProgram
+1
 main =
     run emit allTests
 
